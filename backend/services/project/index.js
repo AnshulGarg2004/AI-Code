@@ -1,11 +1,11 @@
 import express from "express"
 import dotenv from "dotenv"
 import connectDB from "./config/connectdb.js";
-import router from "./routes/auth.route.js";
+
 
 dotenv.config();
 
-const port = process.env.PORT || 8001;
+const port = process.env.PORT || 8002;
 
 const app = express();
 
@@ -14,15 +14,13 @@ const app = express();
 app.use(express.json());
 
 
-app.use('/', router );
-
 app.get('/', (req, res)  => {
     
-    res.status(200).json({message : "hello from auth service"});
+    res.status(200).json({message : "hello from project service"});
 })
 
 
 app.listen( port ,async () => {
-    console.log("Auth Server is successfully runing on port: ", port);
+    console.log("Project Server is successfully runing on port: ", port);
     await connectDB();
 })
