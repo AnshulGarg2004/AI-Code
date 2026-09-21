@@ -1,6 +1,7 @@
 import express from "express"
 import dotenv from "dotenv"
 import connectDB from "./config/connectdb.js";
+import router from "./routes/project.route.js";
 
 
 dotenv.config();
@@ -12,6 +13,9 @@ const app = express();
 
 
 app.use(express.json());
+
+
+app.use('/', router)
 
 
 app.get('/', (req, res)  => {

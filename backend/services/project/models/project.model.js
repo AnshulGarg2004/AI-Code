@@ -14,10 +14,10 @@ const projectSchema = new mongoose.Schema({
         type : String
     },
     starred : {
-        type : bool,
+        type : Boolean,
         default : false
     },
-    lastOpened : {
+    lastOpenedAt : {
         type : Date,
         default : Date.now()
     }
@@ -25,4 +25,4 @@ const projectSchema = new mongoose.Schema({
 
 const Project = mongoose.models.Project || mongoose.model("Project", projectSchema);
 
-export default project;
+export default Project;
