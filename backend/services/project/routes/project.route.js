@@ -5,10 +5,10 @@ const router = express.Router();
 
 router.post('/', createProject);
 router.get('/', getProjects);
+router.get('/starred', getStaredProject);
 router.get('/:id', getProjectById);
 router.patch('/:id', toggleStar);
 router.delete('/:id', deleteProject);
-router.get('/starred', getStaredProject);
 
 
 export default router

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { signInWithPopup } from "firebase/auth"
 import { auth, googleProvdider } from "../firebase"
 
@@ -7,13 +7,26 @@ import { login } from '../src/features/login';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserData } from '../src/redux/userSlice';
 import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
+import { Folder, Loader2, Plus } from 'lucide-react';
+import { getProjects, getStarred } from '../src/features/project';
+import { setProjects, setStarredProject } from '../src/redux/projectSlice';
+import CreateProjectModel from '../components/CreateProjectModel';
+import ProjectCard from '../components/ProjectCard';
+
 
 const Dashboard = () => {
 
     const [loading, setLoading] = useState(false);
+    const [openModel, setOpenModel] = useState(false);
+    const [activeSession, setActiveSession] = useState("projects");
+    const [loadingProjects, setLoadingProjects] = useState(false);
 
     const dispatch = useDispatch();
     const { userData } = useSelector(state => state.user);
+    const { projects, starredProjects } = useSelector(state => state.project);
+    const activeProjects = (activeSession === "projects" ? projects : starredProjects) ?? [];
+
 
     const handleLogin = async () => {
         setLoading(true);
@@ -25,6 +38,29 @@ const Dashboard = () => {
         dispatch(setUserData(loginData))
 
     }
+
+
+    const fetchAllProjects = async () => {
+        setLoadingProjects(true);
+        const data = await getProjects();
+        dispatch(setProjects(data?.projects ?? []))
+        setLoadingProjects(false);
+        
+    }
+    const fetchStarredProjects = async () => {
+        setLoadingProjects(true);
+        const data = await getStarred();
+        dispatch(setStarredProject(data?.projects ?? []))
+        setLoadingProjects(false);
+    }
+
+    useEffect(() => {
+        if (activeSession === "projects") {
+            fetchAllProjects();
+        } else {
+            fetchStarredProjects();
+        }
+    }, [activeSession])
 
 
     if (!userData) {
@@ -61,9 +97,69 @@ const Dashboard = () => {
             <div className='relative flex min-h-0 flex-1 flex-col'>
                 <Navbar />
                 <div className='flex min-h-0 flex-1'>
+                    <Sidebar activeSession={activeSession} setActiveSession={setActiveSession} />
 
+                    <div className='min-h-0 flex-1 overflow-y-auto px-8 py-8 [scrollbar-width:thin] [scrollbar-color:rgba(100,116,139,0.35)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-clip-padding hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 dark:[&::-webkit-scrollbar-thumb]:bg-white/10 dark:hover:[&::-webkit-scrollbar-thumb]:bg-white/20'>
+                        <div className=' mb-8 flex items-start justify-between'>
+                            <div>
+                                <h1 className=' flex items-center gap-2 text-[26px] font-bold text-slate-900 dark:text-white'>
+                                    Welcome Back, {" "} {(userData?.name) || "User"}
+                                    <span>👋</span>
+                                </h1>
+
+                                <p className='mt-1 text-[13.5px] text-slate-500 dark:text-slate-400'>Ready to build something amazing today?</p>
+
+                            </div>
+                            <button
+                            onClick={() => setOpenModel(true)}
+                             className='flex shrink-0 items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition-opacity duration-150 hover:opacity-90 dark:bg-white dark:text-slate-900'>
+                                <Plus size={16} />
+                                New Project
+                            </button>
+                        </div>
+
+                        <div>
+                            <h2 className='mb-4 text-zinc-900 dark:text-white'>
+                                {activeSession === "projects" ? "Recent Projects" : "Starred Projects"}
+                            </h2>
+                        </div>
+
+
+                        {loadingProjects ? (
+                            <div className='flex  min-h-[300px] items-center justify-center   '>
+                                <Loader2 size={28} className=' animate-spin text-slate-400 dark:text-slate-500' />
+                            </div>
+                        ) : activeProjects.length === 0 ? (
+                            <div className='mb-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/40 py-16 text-center dark:border-white/10 dark:bg-white/[0.01]'>
+                                <div className='mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900/5 dark:bg-white/10'>
+                                    <Folder
+                                        size={24}
+                                        className='text-slate-500 dark:text-white'
+                                    />
+                                </div>
+
+                                <h3 className=' mb-1.5 text-[16px] font-semibold text-slate-900 dark:text-white '>
+                                    {activeSession === "starred" ? "No starred projects" : "No projects yet"}
+
+                                </h3>
+                                <p className=' mb-5 max-w-xs text-[13px] text-slate-500 dark:text-slate-500'>
+                                    {activeSession === "starred" ? "Star a project to se it here" : "Create your first project and start building something amazing!"}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className='mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 '>
+                               
+                                
+                                {activeProjects.map((p) => (
+                                    <ProjectCard key={p._id} project={p} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {openModel && <CreateProjectModel open={openModel} onClose={() => setOpenModel(false)}/>} 
         </div>
     )
 

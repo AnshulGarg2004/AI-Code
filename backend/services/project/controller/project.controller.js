@@ -40,10 +40,10 @@ export const getProjects = async (req, res) => {
         }
 
         const key = `projects-${userId}`;
-        let result  =redis.get(key);
+        let result  = await redis.get(key);
         
         if(result) {
-            return res.status(200).json({message : "Projects fetched sucessfully"}, JSON.parse(result));
+            return res.status(200).json({message : "Projects fetched sucessfully", projects : JSON.parse(result)}, );
             
         }
         
@@ -104,10 +104,13 @@ export const getStaredProject = async (req, res) => {
         }
         
         const key = `starred-projects-${userId}`;
-        let result = redis.get(key);
+        const result = await redis.get(key);
         if(result) {
             
-            return res.status(200).json({message : "Starred Projects fetched sucessfully"}, JSON.parse(result));
+            return res.status(200).json({
+                message : "Starred Projects fetched sucessfully",
+                projects : JSON.parse(result)
+            });
         }
         const projects = await Project.find({
             owner : userId, 
@@ -125,6 +128,8 @@ export const getStaredProject = async (req, res) => {
 
 export const toggleStar = async (req, res) => {
     try {
+
+        const userId = req.headers['x-user-id']
         
         const {id} = req.params;
         const project = await Project.findById(id);
@@ -140,6 +145,7 @@ export const toggleStar = async (req, res) => {
         
         
         await redis.del(key);
+        await redis.del(`projects-${userId}`);
         return res.status(200).json({message : "Project star toggled sucessfully", project});
 
         
@@ -153,6 +159,8 @@ export const toggleStar = async (req, res) => {
 
 export const deleteProject = async (req, res) => {
     try {
+
+        const userId = req.headers['x-user-id']
          
         const {id} = req.params;
         const project = await Project.findByIdAndDelete(id);
