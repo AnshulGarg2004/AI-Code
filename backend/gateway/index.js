@@ -24,6 +24,7 @@ app.use(morgan("dev"));
 
 app.use('/api/auth', proxy(process.env.AUTH_SERVICE));
 app.use('/api/project', protect, proxyWithHeaders(process.env.PROJECT_SERVICE));  
+app.use('/api/file', protect, proxyWithHeaders(process.env.FILE_SERVICE));  
 
 
 app.get('/api/get-current-user', protect, getCurrentUser);
