@@ -4,6 +4,7 @@ import Dashboard from '../pages/Dashboard';
 import { getCurrUser } from './features/get_curr_user';
 import { useDispatch } from 'react-redux';
 import { setUserData } from './redux/userSlice';
+import Project from '../pages/Project';
 
 const App = () => {
 const dispatch = useDispatch();
@@ -20,6 +21,7 @@ const dispatch = useDispatch();
         <BrowserRouter>
         <Routes>
             <Route path='/'  element={<Dashboard/>}/>
+            <Route path='/project/:id' element={<Project/>} />
         </Routes>
         </BrowserRouter>
    

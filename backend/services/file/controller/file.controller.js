@@ -215,11 +215,12 @@ export const getFile = async (req, res) => {
     try {
 
         const userId = req.headers['x-user-id']
+        const { id } = req.params
 
 
         
         const file = await File.findOne({
-            id : _id,
+            _id : id,
             owner : userId,
             
             isDeleted : false
@@ -250,7 +251,7 @@ export const getTree = async (req, res) => {
         const {projectId} = req.params
 
         
-        const files = await File.findOne({
+        const files = await File.find({
             projectId,
             owner : userId,
             
