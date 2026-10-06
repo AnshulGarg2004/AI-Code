@@ -7,6 +7,6 @@ export const login = async (token) => {
         return data;
     } catch (error) {
         console.log("error in login feature: ", error);
-        
+
     }
 }

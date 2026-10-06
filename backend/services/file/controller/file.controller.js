@@ -120,7 +120,9 @@ export const createFile = async (req ,res) => {
             ext, 
             size : content.length ,
             type : "file",
-            parentId : parentId || null
+            parentId : parentId || null,
+            content,
+            language
         });
 
         return res.status(200).json({message : "File created", file})
@@ -134,20 +136,18 @@ export const createFile = async (req ,res) => {
 export const updateFile = async (req ,res) => {
     try {
         const {name, content} = req.body;
-    
-
         const userId = req.headers['x-user-id']
 
-        if(!projectId || !name || !parentId) {
-            return res.status(404).json({message : "Project Id and Name and Parent Id required"});
+        if(!name && content === undefined) {
+            return res.status(400).json({message : "Name or content required"});
         }
         
         if(!userId) {
-            return res.status(404).json({message : "Unauthorised Access"});
+            return res.status(401).json({message : "Unauthorised Access"});
         }
         
         const file = await File.findOne({
-            id : _id,
+            _id : req.params.id,
             owner : userId ,
             isDeleted : false
         })
@@ -159,7 +159,7 @@ export const updateFile = async (req ,res) => {
 
         if(name) {
             file.name=  name;
-            const ext = name.includes(".")?name.split('.').pop() : "";
+            file.ext = name.includes(".") ? name.split(".").pop() : "";
         }
 
         if(content !== undefined) {
@@ -173,7 +173,7 @@ export const updateFile = async (req ,res) => {
 
     
 
-        return res.status(200).json({message : "File created", file})
+        return res.status(200).json({message : "File updated", file})
     } catch (error) {
         console.log("error in update File controller : ", error);
         
@@ -271,4 +271,3 @@ export const getTree = async (req, res) => {
         
     }
 }
-

@@ -5,7 +5,7 @@ import { getFileColor, getFolderColor } from '../src/utils/customiseIcon';
 import { createFile, createFolder, deleteFile, updateFile } from '../src/features/file';
 import { createPortal } from "react-dom"
 
-const Folder = ({ projectId, tree, reloadTree, node }) => {
+const Folder = ({ projectId, tree, reloadTree, node, openFile }) => {
     const [open, setOpen] = useState(false);
     const folderColor = getFolderColor(node.name);
     const [folderName, setFolderName] = useState();
@@ -16,12 +16,31 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
     const [renaming, setRenaming] = useState(false);
     const [renameValue, setRenameValue] = useState("");
 
+    const handleContextMenu = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setMenu({ x: event.clientX, y: event.clientY });
+    };
+
+    const handleMouseDown = (event) => {
+        if (event.button === 2) {
+            handleContextMenu(event);
+        }
+    };
 
     const handleCreateFolder = async () => {
-        await createFolder({ projectId, name: folderName, parentId: node?._id })
+        if (!folderName?.trim()) return;
+        await createFolder({ projectId, name: folderName.trim(), parentId: node?._id });
+        setFolderName("");
+        setCreatingFolderIn(null);
+        await reloadTree();
     }
     const handleCreateFile = async () => {
-        await createFile({ projectId, name: fileName, parentId: node._id })
+        if (!fileName?.trim()) return;
+        await createFile({ projectId, name: fileName.trim(), parentId: node._id });
+        setFilerName("");
+        setCreatingFileIn(null);
+        await reloadTree();
     }
     const handleRenameFile = async () => {
         await updateFile({ id: node._id, name: renameValue, content: node?.content });
@@ -42,23 +61,21 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
         setCreatingFolderIn(null);
     }
 
-    const { Icon, color } = getFileColor(node.name)
+    const { icon: Icon, color } = getFileColor(node.name)
 
     if (node.type == "file") {
         return (
-            <div className=' relative'>
+            <div className='relative' onContextMenu={handleContextMenu} onMouseDown={handleMouseDown}>
 
                 <motion.div
                     whileHover={{ x: 2 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     className='group flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors'
-                    onContextMenu={(e) => {
-                        e.preventDefault()
-                        setMenu({ x: e.clientX, y: e.clientY })
-                    }}
+                    onContextMenu={handleContextMenu}
+                    onMouseDown={handleMouseDown}
                 >
 
-                    <div className=' flex min-w-0 flex-1 cursor-pointer items-center gap-1.5'>
+                    <div className=' flex min-w-0 flex-1 cursor-pointer items-center gap-1.5' onClick={() => openFile(node)}>
 
                         <Icon className={`${color}`} size={13} />
 
@@ -147,16 +164,14 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
         )
     }
     return (
-        <div className=' relative'>
+        <div className='relative' onContextMenu={handleContextMenu} onMouseDown={handleMouseDown}>
 
             <motion.div
                 whileHover={{ x: 2 }}
                 transition={{ duration: 0.15, ease: 'easeOut' }}
                 className='group flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors'
-                onContextMenu={(e) => {
-                    e.preventDefault()
-                    setMenu({ x: e.clientX, y: e.clientY })
-                }}
+                onContextMenu={handleContextMenu}
+                onMouseDown={handleMouseDown}
             >
 
                 <div className=' flex min-w-0 flex-1 cursor-pointer items-center gap-1.5' onClick={() => setOpen(v => !v)}>
@@ -177,7 +192,7 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
 
 
 
-                <div className=' hidden items-center gap-0.5 group-hover:flex'>
+                <div className='flex items-center gap-0.5'>
 
                     <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -185,7 +200,7 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
                         className=' p-1 rounded-md text-zinc-500 hover:bg-white/10 hover:text-white'
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleCreateFile(node)
+                            handleNewFile(node)
                             setOpen(true)
                         }}
                     >
@@ -198,8 +213,8 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
                         className=' p-1 rounded-md text-zinc-500 hover:bg-white/10 hover:text-white'
 
                         onClick={(e) => {
-                            handleCreateFolder(node)
                             e.stopPropagation();
+                            handleNewFolder(node)
                             setOpen(true)
                         }}
                     >
@@ -283,7 +298,7 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
                     className='ml-5 overflow-hidden border-l border-white/[0.05] pl-1'
                 >
                     {node.children.map((child) => (
-                        <Folder projectId={projectId} tree={tree} reloadTree={reloadTree} node={child} />
+                        <Folder key={child._id} projectId={projectId} tree={tree} reloadTree={reloadTree} node={child} openFile={openFile} />
                     ))}
                 </motion.div>
             )}
@@ -319,15 +334,13 @@ const Folder = ({ projectId, tree, reloadTree, node }) => {
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
                         autoFocus
-                        value={folderName}
+                        value={fileName}
                         placeholder='File Name'
                         className='w-full rounded-md border border-white/[0.1] bg-white/[0.04] px-2.5 py-1.5 text-[13px] text-white placeholder-zinc-500 outline-none transition-all focus:border-sky-400/50 focus:ring-2 focus:ring-sky-400/15'
-                        onChange={(e) => setFolderName(e.target.value)}
+                        onChange={(e) => setFilerName(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 handleCreateFile();
-                                setFilerName("");
-                                setCreatingFileIn(null)
                             }
                             if (e.key === 'Escape') {
                                 setFilerName("");
