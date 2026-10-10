@@ -1,6 +1,7 @@
 import express from "express"
 import dotenv from "dotenv"
 import connectDB from "./config/connectdb.js";
+import router from "./routes/ai.route.js";
 
 
 
@@ -13,7 +14,7 @@ const app = express();
 
 
 app.use(express.json());
-
+app.use('/', router);
 
 
 app.get('/', (req, res)  => {

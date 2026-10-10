@@ -45,8 +45,8 @@ const Editor = ({ setOpenTabs, setActiveTab, openTabs, activeTab }) => {
         setCode(activeTab?.content || "")
     }, [activeTab])
 
-    const handleCloseTab = ( id) => {
-        
+    const handleCloseTab = ( e,id) => {
+        e.stopPropagation();
         const res = tabs.filter(tab => (tab?.id ?? tab?._id) !== id);
         setOpenTabs(res);
         if(activeTab._id == id) {
