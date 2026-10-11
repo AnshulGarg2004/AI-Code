@@ -17,9 +17,16 @@ export const protect = async (req, res, next) => {
         }
         
         const parsedRes = JSON.parse(sessionData);
-        
+
         req.user = parsedRes;
-        
+        const userId = parsedRes?._id || parsedRes?.id || parsedRes?.userId;
+
+        if (!userId) {
+            return res.status(401).json({message : "Session user id missing"});
+        }
+
+        req.headers["x-user-id"] = String(userId);
+
         next();
         
         

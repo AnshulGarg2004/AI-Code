@@ -149,7 +149,7 @@ const Project = () => {
 
                 <div className={`${mobilePane === "chat" ? "flex" : "hidden"} w-full md:flex md:w-auto`}>
                     {showAIChat && (
-                        <AIChat projectId={projectId} />
+                        <AIChat projectId={id} reloadTree={loadtree} />
                     )}
                 </div>
 
@@ -179,7 +179,7 @@ const Project = () => {
                 </button>
                 <button
                     onClick={() =>{ setMobilePane("chat");
-                        
+                        setShowAIChat(true)
                     }}
                     className={`flex flex-col items-center gap-1 px-4 py-1 text-[11px] font-medium transition-colors ${mobilePane === "chat" ? "text-white" : "text-zinc-500"
                         }`}
@@ -191,7 +191,7 @@ const Project = () => {
                     onClick={() =>{ setMobilePane("terminal");
                         setShowBottomPannel(true)
                     }}
-                    className={`flex flex-col items-center gap-1 px-4 py-1 text-[11px] font-medium transition-colors ${mobilePane === "terminal" ? "text-white" : "text-zinc-500"
+                    className={`flex flex-col items-center gap-1 px-4 py-1 text-[11px] font-medium transition-colors ${showBottomPannel? "text-white" : "text-zinc-500"
                         }`}
                 >
                     <TerminalSquare size={18} />

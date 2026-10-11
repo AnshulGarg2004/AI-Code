@@ -4,6 +4,20 @@ import dotenv from "dotenv"
 dotenv.config()
 const File_URL = process.env.FILE_SERVICE_URL;
 
+export const createRootFolder = async ({ projectId, projectName, userId }) => {
+    try {
+        const { data } = await axios.post(
+            `${File_URL}/create-root-folder`,
+            { projectId, projectName },
+            { headers: { "x-user-id": String(userId) } }
+        );
+        return data.rootFolder;
+    } catch (error) {
+        console.log("error in create root folder ai: ", error);
+        throw new Error(error);
+    }
+}
+
 export const createFolder = async ({ projectId, parentId, name, userId }) => {
     try {
         const { data } = await axios.post(`${File_URL}/create-folder`, { projectId, parentId, name }, {
@@ -11,7 +25,7 @@ export const createFolder = async ({ projectId, parentId, name, userId }) => {
                 "x-user-id": String(userId)
             }
         })
-        return data;
+        return data.Folder;
     } catch (error) {
         console.log("error in create folder ai: ", error);
         throw new Error(error);
@@ -30,7 +44,7 @@ export const createFile = async ({ projectId, parentId, name, userId, content = 
             }
         )
 
-        return data
+        return data.file
 
     } catch (error) {
         console.log("error in create file ai: ", error);
@@ -41,7 +55,7 @@ export const createFile = async ({ projectId, parentId, name, userId, content = 
 export const updateFile = async ({ name, content = "", userId, id }) => {
     try {
 
-        const { data } = await axios.post(`${File_URL}/update-file/${id}`, { name, content },
+        const { data } = await axios.post(`${File_URL}/update/${id}`, { name, content },
             {
                 headers: {
                     "x-user-id": String(userId)
@@ -49,7 +63,7 @@ export const updateFile = async ({ name, content = "", userId, id }) => {
             }
         )
 
-        return data
+        return data.file
 
     } catch (error) {
         console.log("error in update file ai: ", error);
@@ -67,7 +81,7 @@ export const deleteFile = async ({ userId }) => {
             }
         )
 
-        return data
+        return data.file
 
     } catch (error) {
         console.log("error in delete file ai: ", error);
@@ -104,7 +118,7 @@ export const getFile = async ({userId, id}) => {
             }
         )
 
-        return data
+        return data.file
 
     } catch (error) {
         console.log("error in get file ai: ", error);

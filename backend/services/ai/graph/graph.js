@@ -1,10 +1,10 @@
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
-import {  StateGraph } from "@langchain/langgraph";
+import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { fileTools } from "./tools.js";
 import llm from "../utils/llm.js";
 
-const system_prompt=`
+const system_prompt = `
 You are an expert coding agent inside a Cursor-like IDE.
 
 Your job is to ACTUALLY create and modify the user's project using filesystem tools.
@@ -473,48 +473,55 @@ Return only:
 
 const max_message = 12;
 
-const recent_mesage = ({messages = []}) => {
-    if(messages.length < max_message) {
-        return messages
+const recent_mesage = ({ messages = [] }) => {
+    const firstUserMessage = messages.find((message) => HumanMessage.isInstance(message));
+    const recents = messages.slice(-max_message);
+
+    if (firstUserMessage && !recents.includes(firstUserMessage)) {
+        return [firstUserMessage, ...recents];
     }
 
-    const firstUserMessage  = ()=>{
-        messages.find((message) => HumanMessage.isInstance(message));
-        const recents = messages.slice(-max_message);
-
-        if(recents && !recents.includes(firstUserMessage)) {
-            return [firstUserMessage, ...recents];
-        }
-
-        return recents
-    } 
+    return recents;
 }
 
-
-export const graph = ({projectId, userId}) => {
-    const tools = fileTools({projectId, userId});
+export const graph = ({ projectId, userId }) => {
+    const tools = fileTools({ projectId, userId });
+    const toolsAfterTree = tools.filter((tool) => tool.name !== "get_tree");
 
     const model = llm.bindTools(tools);
 
-    const agent = async(state) => {
+    const agent = async (state) => {
         const allMessages = state.messages || [];
         const recentMesage = recent_mesage(allMessages)
+        const treeWasFetched = allMessages.some((message) => message.name === "get_tree");
 
         const messages = [
-            new SystemMessage(system_prompt),...recentMesage
+            new SystemMessage(
+                `${system_prompt}
+
+${treeWasFetched
+    ? "The project tree has already been fetched for this request. Do not call get_tree again. Do not ask the user to repeat or clarify the request. If the user requested a feature or file change, immediately call create_folder, create_file, or update_file as needed. Do not respond with a plan or explanation until the requested changes are complete."
+    : ""}`
+            ),
+            ...recentMesage
         ]
 
+        const lastToolMessage = [...allMessages]
+            .reverse()
+            .find((message) => message.type === "tool");
+        const turnModel = lastToolMessage?.name === "get_tree"
+            ? llm.bindTools(toolsAfterTree, { tool_choice: "required" })
+            : model;
+        const response = await turnModel.invoke(messages)
 
-        const response = await model.invoke(messages)
-
-        return {messages : response}
+        return { messages: [response] }
     };
 
     const toolNode = new ToolNode(tools);
 
     const shouldContinue = (state) => {
-        const lastMess = state.messages?.[state.messages.length-1]
-        if(lastMess instanceof AIMessage && lastMess.tool_calls?.length) {
+        const lastMess = state.messages?.[state.messages.length - 1]
+        if (lastMess instanceof AIMessage && lastMess.tool_calls?.length) {
             return "tools"
         }
         else {
@@ -524,12 +531,14 @@ export const graph = ({projectId, userId}) => {
     }
 
     return new StateGraph(MessagesAnnotation)
-    .addNode("agent", agent)
-    .addNode("tools", toolNode)
-    .addEdge("__start__", "agent")
-    .addConditionalEdges("agent", shouldContinue, "tools")
-    .addEdge("tools", "agent")
-    .addEdge("agent", "__end__")
-    .compile()
+        .addNode("agent", agent)
+        .addNode("tools", toolNode)
+        .addEdge("__start__", "agent")
+        .addConditionalEdges("agent", shouldContinue, {
+            tools: "tools",
+            __end__: "__end__",
+        })
+        .addEdge("tools", "agent")
+        .compile();
 
 }

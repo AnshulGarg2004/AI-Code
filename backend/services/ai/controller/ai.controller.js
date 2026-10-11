@@ -1,16 +1,16 @@
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
+import mongoose from "mongoose";
 import { graph } from "../graph/graph.js";
-import { object, success } from "zod";
-import { disconnect } from "mongoose";
 
-const buildHistory = async (history) => {
+const buildHistory = (history) => {
     if (!Array.isArray(history)) {
         return [];
     }
 
     const recents = history.slice(-6);
 
-    recents.filter((recent) => recent?.content && (recent.role == "user" || recent.role == "assistant"))
+    return recents
+        .filter((recent) => recent?.content && (recent.role === "user" || recent.role === "assistant"))
         .map((mess) => {
             if (mess.role == "user") {
                 return new HumanMessage(mess.content)
@@ -22,8 +22,8 @@ const buildHistory = async (history) => {
 
 export const chat = async (req, res) => {
 
-    const sendEvent = async (req, event, data) => {
-        if (res.writeableEnded || res.destroyed) {
+    const sendEvent = (res, event, data) => {
+        if (res.writableEnded || res.destroyed) {
             return false;
         }
 
@@ -37,7 +37,7 @@ export const chat = async (req, res) => {
             return false;
         }
     }
-    const disconected = false;
+    let disconected = false;
     try {
         const { message, projectId, history = [] } = req.body;
         const userId = req.headers['x-user-id'];
@@ -48,6 +48,9 @@ export const chat = async (req, res) => {
         }
         if (!message) {
             return res.status(400).json({ message: "Message  is required" });
+        }
+        if (!userId || !mongoose.isValidObjectId(userId)) {
+            return res.status(401).json({ message: "Valid user id required" });
         }
 
         res.setHeader(
@@ -74,12 +77,14 @@ export const chat = async (req, res) => {
         res.flushHeaders?.();
 
         res.once("close", () => {
-            disconected = true;
-            console.log("AI client disconected. no events can be sent");
+            if (!res.writableEnded) {
+                disconected = true;
+                console.log("AI client disconnected before the stream completed");
+            }
 
         });
 
-        sendEvent(res, "start", {
+        sendEvent(res,"start", {
             success: true,
             message: "Ai started"
         });
@@ -99,8 +104,8 @@ export const chat = async (req, res) => {
 
         let finalMessage = "";
 
-        for await (const chunk of object) {
-            if (res.writeableEnded || disconected) {
+        for await (const chunk of stream) {
+            if (res.writableEnded || disconected) {
                 break;
             }
 
@@ -134,37 +139,34 @@ export const chat = async (req, res) => {
 
                 if (content) {
                     finalMessage = content;
-                    sendEvent(res, "messasge", { content })
+                    sendEvent(res, "message", { content })
                 }
             }
             if (chunk.tools) {
                 const toolMessages = chunk.tools.messages || [];
 
                 for (const toolMess of toolMessages) {
-                    let result = null;
+                    let result = toolMess.content;
                     try {
-                        result = typeof toolMess == "string" ? JSON.parse(toolMess.content) : toolMess.content
+                        result = typeof result == "string" ? JSON.parse(result) : result
                     } catch (error) {
-                        result = null;
-                    }
-
-
-                    if (result.operation) {
-                        sendEvent(res, operation, result);
                         continue
+                        
                     }
 
-                    sendEvent(res, "tool_result", typeof toolMess == "string" ? toolMess.content : JSON.stringify(toolMess.content))
-                }
-            }
 
-            if (!disconected && !res.writeableEnded) {
-                sendEvent(res, "done", {
-                    success: true,
-                    message: finalMessage || "done"
-                })
+                    if (result?.operation) {
+                        sendEvent(res, "operation", result);
+                    }
+}
             }
+        }
 
+        if (!disconected && !res.writableEnded) {
+            sendEvent(res, "done", {
+                success: true,
+                message: finalMessage || "done"
+            })
             res.end();
         }
     } catch (error) {
@@ -178,7 +180,7 @@ export const chat = async (req, res) => {
                 success: false,
                 message: error?.message || "AI request failed"
             })
-            if (!res.writeableEnded) {
+            if (!res.writableEnded) {
                 res.end();
             }
 

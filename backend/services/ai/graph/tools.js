@@ -1,5 +1,5 @@
 import { tool } from "@langchain/core/tools"
-import { createFile, createFolder, deleteFile, getFile, getTree, updateFile } from "../utils/fetchFileAPI.js";
+import { createFile, createFolder, createRootFolder, deleteFile, getFile, getTree, updateFile } from "../utils/fetchFileAPI.js";
 import z, { file } from "zod";
 
 const compactTree = (items = []) => {
@@ -19,12 +19,28 @@ const compactTree = (items = []) => {
 
 export const fileTools = ({ projectId, userId }) => {
 
+    const createRootFolderTool = tool(
+        async ({ projectName }) => {
+            const rootFolder = await createRootFolder({ projectId, projectName, userId });
+            return JSON.stringify({
+                success: true,
+                operation: "root_folder_created",
+                folder: rootFolder
+            });
+        },
+        {
+            name: "create_root_folder",
+            description: "Create the project root folder when get_tree returns an empty tree.",
+            schema: z.object({ projectName: z.string() })
+        }
+    );
+
     const getTreeTool = tool(
-        async ({ projectId, userId }) => {
+        async () => {
             console.log("ai tool get tre");
 
             const res = await getTree({ projectId, userId })
-            const tree = compactTree(res);
+            const tree = compactTree(res?.tree || []);
 
             return JSON.stringify({ success: true, tree })
         },
@@ -162,10 +178,17 @@ The response contains the complete file content
 
     )
     const createFileTool = tool(
-        async ({ name, parentId }) => {
+        async ({ name, parentId, content, language }) => {
             console.log("ai tool create filde");
 
-            const file = await createFile({ projectId, userId, name, parentId, content, language : language ||  "plaintext" })
+            const file = await createFile({
+                projectId,
+                userId,
+                name,
+                parentId,
+                content,
+                language: language || "plaintext"
+            })
 
 
             return JSON.stringify({
@@ -257,12 +280,13 @@ RULES:
         async ({ userId }) => {
             console.log("ai tool delele filde");
 
-            const file = await deleteFile({  userId})
+            const file = await deleteFile({ userId })
 
 
             return JSON.stringify({
                 success: true, operation: "file_updated", file: {
                     _id: file._id,
+                    name : file.name
                     
                 }
             })
@@ -292,5 +316,5 @@ STRICT RULES:
 
     )
 
-    return [getFileTool, getTreeTool, updateFileTool, deleteFileTool, createFileTool, createFolderTool ]
+    return [getFileTool, getTreeTool, createRootFolderTool, updateFileTool, deleteFileTool, createFileTool, createFolderTool ]
 }

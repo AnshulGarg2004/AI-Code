@@ -4,6 +4,7 @@ const llm = new ChatOpenRouter({
   model: "deepseek/deepseek-chat",
   temperature: 0,
   maxTokens: 1024,
+  maxRetries: 0,
 });
 
 

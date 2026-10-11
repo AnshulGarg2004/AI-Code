@@ -1,5 +1,6 @@
 import File from "../models/file.model.js";
 import { buildTree } from "../utils/buildTree.js";
+import mongoose from "mongoose";
 
 export const createRootFolder = async (req ,res) => {
     try {
@@ -249,6 +250,14 @@ export const getTree = async (req, res) => {
 
         const userId = req.headers['x-user-id']
         const {projectId} = req.params
+
+        if (!userId || !mongoose.isValidObjectId(userId)) {
+            return res.status(401).json({message : "Valid user id required"});
+        }
+
+        if (!projectId || !mongoose.isValidObjectId(projectId)) {
+            return res.status(400).json({message : "Valid project id required"});
+        }
 
         
         const files = await File.find({
