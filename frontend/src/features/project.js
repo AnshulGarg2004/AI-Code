@@ -13,7 +13,7 @@ export const getProjects = async() => {
         const {data} = await api.get('/api/project');
         return data;
     } catch (error) {
-        return null;
+        return [];
     }
 }
 
@@ -31,7 +31,7 @@ export const getStarred = async () => {
         const {data} = await api.get('/api/project/starred');
         return data;
     } catch (error) {
-        return null;
+        return [];
     }
 }
 export const toggleStar = async(id) => {

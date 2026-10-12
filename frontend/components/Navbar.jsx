@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../src/features/logout';
 import { setUserData } from '../src/redux/userSlice';
 
-const Navbar = () => {
+const Navbar = (onToggleSidebar) => {
 
     const { userData } = useSelector(state => state.user);
     const dispatch = useDispatch();

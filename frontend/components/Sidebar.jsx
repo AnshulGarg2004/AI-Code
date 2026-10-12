@@ -1,17 +1,20 @@
 import React from 'react'
 import { motion } from "motion/react"
-import { Folder, Star, Zap } from 'lucide-react'
+import { Coins, Folder, Star, Zap } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
-const Sidebar = ({ activeSession, setActiveSession}) => {
+const Sidebar = ({ activeSession, setActiveSession }) => {
 
-    
+    const navigate = useNavigate();
+    const { userData } = useSelector(state => state.user)
     return (
         <div className='flex h-full w-64 shrink-0 flex-col border-r border-slate-200/70 bg-white/60 px-3 py-5 font-sans backdrop-blur-xl transition-colors duration-300 dark:border-white/[0.06] dark:bg-white/[0.02]'>
             <div className='flex flex-col gap-1'>
                 <motion.div
                     onClick={() => setActiveSession("projects")}
                     whileTap={{ scale: 0.97 }}
-                    className={`relative cursor-pointer flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] font-medium transition-colors duration-150 ${activeSession==="projects" ? "text-slate-900 dark:text-white" : "text-slate-500 hover:bg-slate-100/80 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-slate-200"}`}
+                    className={`relative cursor-pointer flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] font-medium transition-colors duration-150 ${activeSession === "projects" ? "text-slate-900 dark:text-white" : "text-slate-500 hover:bg-slate-100/80 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-slate-200"}`}
                 >
                     {activeSession === "projects" && (
                         <div className=' absolute inset-0 rounded-lg border border-slate-900/10 bg-slate-900/5 dark:border-white/10 dark:bg-white/10'></div>
@@ -19,20 +22,46 @@ const Sidebar = ({ activeSession, setActiveSession}) => {
                     <Folder size={17} strokeWidth={2} className='relative' />
 
                     <span className=' relative'>Projects</span>
-                    
+
                 </motion.div>
-                
+
                 <motion.div onClick={() => setActiveSession("starred")} whileTap={{ scale: 0.97 }} className={`relative cursor-pointer flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] font-medium transition-colors duration-150 ${activeSession === "starred" ? "text-slate-900 dark:text-white" : "text-slate-500 hover:bg-slate-100/80 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-slate-200"}`}>
                     {activeSession === "starred" && (
                         <div className=' absolute inset-0 rounded-lg border border-slate-900/10 bg-slate-900/5 dark:border-white/10 dark:bg-white/10'></div>
                     )}
-                   
+
                     <Star size={17} strokeWidth={2} className='relative' />
 
                     <span className=' relative'>Starred</span>
                 </motion.div>
             </div>
 
+
+            <div className='my-4 h-px bg-slate-200/70 dark:bg-white/[0.06]' />
+
+            <div className='mb-3 rounded-xl border border-slate-200/70 bg-white/70 p-3.5 shadow-sm backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.03] dark:shadow-none'>
+                <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-2'>
+                        <div className='flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900/5 text-slate-700 dark:bg-white/10 dark:text-white'>
+                            <Coins size={4} /></div>
+                        <span className="
+  text-[12px]
+  font-medium
+  text-slate-600
+  dark:text-slate-400
+">
+                            AI Credits
+                        </span>
+                        <span className="
+  text-[15px]
+  font-bold
+  text-slate-900
+  dark:text-white
+">
+                            {userData?.credits || 0}</span>
+                    </div>
+                </div>
+            </div>
 
             <div className='my-4 h-px bg-slate-200/70 dark:bg-white/[0.06]' />
 
@@ -43,6 +72,7 @@ const Sidebar = ({ activeSession, setActiveSession}) => {
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate('/plan')}
                     className='flex w-full items-center justify-center gap-1.5 rounded-lg bg-slate-900 py-2 text-[12.5px] font-semibold text-white shadow-sm transition-opacity duration-150 hover:opacity-90 dark:bg-white dark:text-slate-900'
                 >
                     <Zap />
@@ -51,6 +81,6 @@ const Sidebar = ({ activeSession, setActiveSession}) => {
             </div>
         </div>
     )
-} 
+}
 
 export default Sidebar

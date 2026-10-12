@@ -20,12 +20,12 @@ const Project = () => {
     const dispatch = useDispatch();
 
     const [showPreview, setShowPreview] = useState(false)
-    const [showExplorer, setShowExplorer] = useState(false);
-    const [showAIChat, setShowAIChat] = useState(false);
-    const [showTerminal, setShowTerminal] = useState(false);
+    const [showExplorer, setShowExplorer] = useState(true);
+    const [showAIChat, setShowAIChat] = useState(true);
+    const [showTerminal, setShowTerminal] = useState(true);
     const [tree, setTree] = useState(null)
     const [activeTab, setActiveTab] = useState(null);
-    const [showBottomPannel, setShowBottomPannel] = useState(false)
+    const [showBottomPannel, setShowBottomPannel] = useState(true)
     const [openTabs, setOpenTabs] = useState([]);
     const [mobilePane, setMobilePane] = useState("explorer")
     const [isPreviewFullScreen, setIsPreviewFullScreen] = useState(false);
@@ -39,7 +39,7 @@ const Project = () => {
     useEffect(() => {
         const handleGetProject = async () => {
             const data = await getProjectById(id);
-            dispatch(setCurrentProject(data));
+            dispatch(setCurrentProject(data?.project || null));
         }
         handleGetProject()
     }, [id]);

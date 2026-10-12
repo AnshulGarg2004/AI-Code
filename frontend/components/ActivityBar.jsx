@@ -60,7 +60,7 @@ function ActivityIcon({ icon: Icon, label, active, onClick }) {
 }
 
 
-const ActivityBar = ({showAIChat, showExplorer, showTerminal, setShowAIChat, setShowTerminal, setShowExplorer}) => {
+const ActivityBar = ({ showAIChat, showExplorer, showTerminal, setShowAIChat, setShowTerminal, setShowExplorer }) => {
 
 
     return (
@@ -68,12 +68,8 @@ const ActivityBar = ({showAIChat, showExplorer, showTerminal, setShowAIChat, set
             <ActivityIcon icon={Files} label={"Explorer"} active={showExplorer} onClick={() => setShowExplorer(v => !v)} />
             <ActivityIcon icon={Bot} label={"AI Chat"} active={showAIChat} onClick={() => setShowAIChat(v => !v)} />
 
-            <div className='mt-auto flex flex-col items-center gap-2'>
-                <div className=' mb-1 h-px w-6 bg-white/[0.06]'>
+            <ActivityIcon icon={SquareTerminal} label={"Terminal"} active={showTerminal} onClick={() => setShowTerminal(v => !v)} />
 
-                    <ActivityIcon icon={SquareTerminal} label={"Terminal"} active={showTerminal} onClick={() => setShowTerminal(v => !v)} />
-                </div>
-            </div>
         </div>
     )
 }
