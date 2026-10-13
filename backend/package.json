@@ -1,0 +1,8 @@
+{
+  "name": "ai-code-backend",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "ioredis": "^6.0.0"
+  }
+}
