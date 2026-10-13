@@ -3,6 +3,9 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from "motion/react"
 import { createPayment, verifyPayment } from '../src/features/payment'
+import { getCurrUser } from '../src/features/get_curr_user'
+import { useDispatch } from 'react-redux'
+import { setUserData } from '../src/redux/userSlice'
 
 const plans = [
     {
@@ -68,6 +71,7 @@ const plans = [
 const Plan = () => {
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const loadRazorpay = () => new Promise((resolve, reject) => {
         if (window.Razorpay) {
@@ -108,13 +112,18 @@ const Plan = () => {
                 order_id: data.order.id,
 
                 handler: async (resp) => {
-                    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = resp;
-                    const result = await verifyPayment({razorpay_order_id, razorpay_payment_id, razorpay_signature});
-                    if (!result) {
-                        console.error("Payment verification failed");
-                        return;
+                    try {
+                        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = resp;
+                        await verifyPayment({razorpay_order_id, razorpay_payment_id, razorpay_signature});
+
+                        const updatedUser = await getCurrUser();
+                        if (!updatedUser) {
+                            throw new Error("Payment succeeded, but the updated credit balance could not be loaded");
+                        }
+                        dispatch(setUserData(updatedUser));
+                    } catch (error) {
+                        console.error("error in payment verification:", error);
                     }
-                    console.log("Payment verified", result);
                 },
                 theme : {
                     color : '#4f46e5'

@@ -116,12 +116,11 @@ export const verify = async (req, res) => {
             return res.status(400).json({message : "invalid payment signature"})
         }
         
+        await addCredits({userId, credits: payment.credits});
+
         payment.status = "paid";
         payment.razorpayPayemntId = razorpay_payment_id;
-
         await payment.save();
-
-        const data = await addCredits({userId, credits : payment.credits});
 
 
         return res.status(200).json({

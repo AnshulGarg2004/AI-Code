@@ -24,10 +24,10 @@ const CreateProjectModel = ({ open, onClose }) => {
         setLoading(false);
     } 
     return (
-        <div>
-            <motion.div className="fixed inset-0 bg-black/20 backdrop-blur-sm dark:bg-black/60" />
+        <div className='fixed inset-0 z-[100] flex items-center justify-center p-4'>
+            <motion.div className="absolute inset-0 bg-black/20 backdrop-blur-sm dark:bg-black/60" />
 
-            <div className='pointer-events-none absolute -z-10 h-[460px] w-[460px] rounded-full bg-sky-300/20 blur-[130px] dark:bg-sky-500/10' />
+            <div className='pointer-events-none absolute h-[460px] w-[460px] rounded-full bg-sky-300/20 blur-[130px] dark:bg-sky-500/10' />
             <motion.div
                 initial={{
                     opacity: 0,
@@ -51,7 +51,7 @@ const CreateProjectModel = ({ open, onClose }) => {
                 }}
 
 
-                className='relative w-full max-w-md overflow-hidden rounded-[28px] border border-black/[0.08] bg-white/70 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-white/[0.1] dark:bg-white/[0.05] dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.7)]'
+                className='relative z-10 w-full max-w-md overflow-hidden rounded-[28px] border border-black/[0.08] bg-white/70 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-white/[0.1] dark:bg-white/[0.05] dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.7)]'
             >
 
                 <div className='pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/30' />
@@ -84,12 +84,19 @@ const CreateProjectModel = ({ open, onClose }) => {
                     </div>
                 </div>
 
-                <div>
-                    <button onClick={onClose} className="rounded-xl border border-black/[0.08] bg-black/[0.02] px-5 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-black/[0.05] hover:text-zinc-900 dark:border-white/[0.1] dark:bg-white/[0.03] dark:text-zinc-300 dark:hover:bg-white/[0.07] dark:hover:text-white">
+                <div className='flex items-center justify-end gap-3 border-t border-black/[0.06] px-6 py-5 dark:border-white/[0.08]'>
+                    <button
+                        type='button'
+                        onClick={onClose}
+                        disabled={loading}
+                        className="min-w-[92px] rounded-xl border border-black/[0.08] bg-black/[0.02] px-5 py-2.5 text-sm font-semibold text-zinc-700 transition-all hover:border-black/[0.14] hover:bg-black/[0.05] hover:text-zinc-900 focus:outline-none focus:ring-4 focus:ring-sky-400/15 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[0.1] dark:bg-white/[0.03] dark:text-zinc-300 dark:hover:border-white/[0.18] dark:hover:bg-white/[0.07] dark:hover:text-white">
                         Cancel
                     </button>
-                    <button onClick={handleCreateProject} className="rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_8px_24px_-8px_rgba(0,0,0,0.4)] transition-all hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
-                        
+                    <button
+                        type='button'
+                        onClick={handleCreateProject}
+                        disabled={loading}
+                        className="min-w-[144px] rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_8px_24px_-8px_rgba(0,0,0,0.4)] transition-all hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-400/20 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:focus:ring-white/20">
                         {loading ? "Creating..." : "Create Project"}
                     </button>
                 </div>

@@ -157,7 +157,7 @@ const AIChat = ({ projectId, history = [], reloadTree }) => {
             try {
                 while (true) {
                     const { value, done } = await reader.read();
-
+                    
                     if (done) {
                         break;
                     }
@@ -237,9 +237,12 @@ const AIChat = ({ projectId, history = [], reloadTree }) => {
         } catch (error) {
             console.log("AI chat error: ", error);
             setStatus("Failed");
+            const message = error.message?.includes("could not verify available credits")
+                ? "AI provider is temporarily rate-limited. Please retry in about 10 seconds."
+                : error.message || "AI request failed.";
             setMessages((current) => [
                 ...current,
-                { role: "assistant", content: error.message || "AI request failed." }
+                { role: "assistant", content: message, error: true }
             ]);
         } finally {
 

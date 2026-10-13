@@ -484,6 +484,31 @@ const recent_mesage = ({ messages = [] }) => {
     return recents;
 }
 
+const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+const getRetryAfterSeconds = (error) => {
+    const message = error?.message || "";
+    const retryAfter = message.match(/Retry-After["':\s]+(\d+)/i)?.[1];
+    const seconds = Number(retryAfter);
+
+    return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, 30) : 10;
+};
+
+const invokeModel = async (model, messages) => {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+            return await model.invoke(messages);
+        } catch (error) {
+            const isAdmissionControlError = error?.message?.includes("could not verify available credits");
+            if (!isAdmissionControlError || attempt === 1) {
+                throw error;
+            }
+
+            await wait(getRetryAfterSeconds(error) * 1000);
+        }
+    }
+};
+
 export const graph = ({ projectId, userId }) => {
     const tools = fileTools({ projectId, userId });
     const toolsAfterTree = tools.filter((tool) => tool.name !== "get_tree");
@@ -512,7 +537,7 @@ ${treeWasFetched
         const turnModel = lastToolMessage?.name === "get_tree"
             ? llm.bindTools(toolsAfterTree, { tool_choice: "required" })
             : model;
-        const response = await turnModel.invoke(messages)
+        const response = await invokeModel(turnModel, messages)
 
         return { messages: [response] }
     };
