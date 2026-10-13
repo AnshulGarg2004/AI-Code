@@ -28,6 +28,13 @@ app.use('/api/file', protect, proxyWithHeaders(process.env.FILE_SERVICE));
 app.use('/api/ai', protect, proxyWithHeaders(process.env.AI_SERVICE));  
 app.use('/api/payment', protect, proxyWithHeaders(process.env.PAYMENT_SERVICE));  
 
+console.log(process.env.AUTH_SERVICE);
+console.log(process.env.PROJECT_SERVICE);
+console.log(process.env.FILE_SERVICE);
+console.log(process.env.AI_SERVICE);
+console.log(process.env.PAYMENT_SERVICE);
+
+
 
 app.get('/api/get-current-user', protect, getCurrentUser);
 app.get('/', (req, res)  => {
