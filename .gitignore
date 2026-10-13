@@ -8,8 +8,8 @@ node_modules/
 !.env.template
 *.pem
 *.key
-serviceAccountKey*.json
-firebase-adminsdk*.json
+backend/services/auth/serviceAccountKey.json
+
 
 # Build and test output
 dist/

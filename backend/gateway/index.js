@@ -9,6 +9,11 @@ import { getCurrentUser } from "./controllers/user.controller.js";
 import { proxyWithHeaders } from "./utils/proxy_wih_header.js";
 dotenv.config();
 
+console.log("au: ",process.env.AUTH_SERVICE);
+console.log("prj",process.env.PROJECT_SERVICE);
+console.log("fi",process.env.FILE_SERVICE);
+console.log("ai",process.env.AI_SERVICE);
+console.log("pa",process.env.PAYMENT_SERVICE);
 const port = process.env.PORT || 8000;
 
 const app = express();
@@ -28,11 +33,6 @@ app.use('/api/file', protect, proxyWithHeaders(process.env.FILE_SERVICE));
 app.use('/api/ai', protect, proxyWithHeaders(process.env.AI_SERVICE));  
 app.use('/api/payment', protect, proxyWithHeaders(process.env.PAYMENT_SERVICE));  
 
-// console.log(process.env.AUTH_SERVICE);
-// console.log(process.env.PROJECT_SERVICE);
-// console.log(process.env.FILE_SERVICE);
-// console.log(process.env.AI_SERVICE);
-// console.log(process.env.PAYMENT_SERVICE);
 
 
 
